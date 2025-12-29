@@ -7,9 +7,9 @@ The document can be interacted using the following commands. Commands are case-s
 ```COMMAND [args] ```
 
 ## INSERT
-The `INSERT` command appends a line of text at the given line number of the document. If none are provided, the text is appended to a new line at the end of the document.
+The `INSERT` command is used to write text lines to the document. If a line number is provided, then it inserts the text at that line. If not, then the text is appended to a new line at the end of the document. If no text is provided, an empty line is inserted.
 
-```INSERT [optional line number] some text```
+```INSERT [optional line number] [optional text]```
 
 ## DELETE
 The `DELETE` command deletes lines. It takes a starting line and an optional amount of lines to delete (1 if not provided) as parameters.
@@ -22,7 +22,7 @@ The `PRINT` command is used to view the document with line numbers. It takes a s
 ```PRINT [optional starting line] [optional ending line]```
 
 ## EOF
-The `EOF` command is used to exit the program. No parameters are taken. Upon exiting, it will print the contents of the document with numbered lines.
+The `EOF` command is used to exit the program. No parameters are taken. Upon exiting, the contents of the document with numbered lines are printed.
 
 ```EOF```
 
@@ -32,7 +32,7 @@ The `SAVEFILE` command is used to write the document to a file. The name of the 
 ```SAVEFILE [file name]```
 
 ## OPENFILE
-The `OPENFILE` command is used to read a text file into the editor. It deletes any existing text in the document.
+The `OPENFILE` command is used to read a text file into the editor. The file overwrites any exisitng text in the document.
 
 ```OPENFILE [file name]```
 

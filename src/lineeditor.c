@@ -7,8 +7,9 @@
 #include <time.h>
 #include "cll.h"
 
-int readline(char **b, int *size) {
-	int i = 0, c = getchar();
+int readline(char **b, size_t *size) {
+	size_t i = 0; 
+	int c = getchar();
 	while(c != '\n' && c != EOF) {
 		if(i + 1 >= *size) {
 			 *b = realloc(*b, *size *= 2);
@@ -22,174 +23,174 @@ int readline(char **b, int *size) {
 
 int main() {
 	cll doc = cll_create();
-	char *s = malloc(16), *p, *p2;
-	int l = 16, i, d, t1, t2, t3;
-	char command[16];
+	char *b = malloc(16), *p, *p2;
+	int i, k = 1, arg1, arg2, t1, t2, t3;
+	size_t bsize = 16, blen;
+	char *tok;
 	FILE *fp;
 	time_t t;
 	pid_t pid;
+	
+	while(k) {
+		printf("> ");
+		k = readline(&b, &bsize);
 
-	while(readline(&s, &l)) {
-		command[0] = '\0';
-		sscanf(s, "%15s", command);
+		blen = strlen(b);
+		tok = strtok(b, " ");
+		if(!tok) {
+			continue;
+		} else if(strcmp(tok, "INSERT") == 0) {
+			tok = strtok(NULL, " ");
 
-		if(strcmp(command, "INSERT") == 0) {
-			if(strlen(s) <= 6) {
+			if(!tok) {
 				cll_insert(&doc, -1, "");
 				continue;
 			}
-			p = s + 7;
-			sscanf(p, "%15s", command);
-			for(i = 0; *(command + i) != '\0'; i++) {
-				if(!isdigit(*(command + i))) {
-					goto insert_append;
+			arg1 = 0;
+			for(i = 0; tok[i] != '\0'; i++) {
+				if(!isdigit(tok[i])) {		
+					if(blen > strlen(b) + strlen(tok) + 1) {
+						tok[strlen(tok)] = ' ';
+					}
+
+					cll_insert(&doc, -1, tok);
+					arg1 = -1;
+					break;
 				}
 			}
-			d = atoi(command);
-			if(d <= 0) {
-				printf("Invalid line number.");
+			if(arg1 == -1) {
 				continue;
 			}
-			while(doc.len < d - 1) {
+
+			arg1 = atoi(tok);
+			if(arg1 <= 0) {
+				printf("  Invalid line number %d.\n", arg1);
+				continue;
+			}
+
+			while(doc.len < arg1 - 1) {
 				cll_insert(&doc, -1, "");
 			}
 			
-			while(*p == ' ' || *p == '\t' || *p == '\n') {
-				p++;
+			arg2 = strlen(tok);	
+			tok = strtok(NULL, " ");
+			if(!tok) {
+				cll_insert(&doc, arg1 - 1, "");
+				continue;
 			}
 
-			p += strlen(command);
-
-                        while(*p == ' ' || *p == '\t' || *p == '\n') {
-				p++;
+			if(blen > strlen(b) + arg2 + strlen(tok) + 2) {
+				tok[strlen(tok)] = ' ';
 			}
-			
-			cll_insert(&doc, d - 1, p);
-
-			continue; 
-			insert_append:
-			cll_insert(&doc, -1, p);
-		} if(strcmp(command, "EOF") == 0) {
+			cll_insert(&doc, arg1 - 1, tok);
+		} else if(strcmp(tok, "EOF") == 0) {
 			break;
-		} else if(strcmp(command, "DELETE") == 0) {
-			t2 = 1;
-			t1 = -1;
-			if(strlen(s) <= 6) {
-				printf("No parameters");
+		} else if(strcmp(tok, "DELETE") == 0) {
+			tok = strtok(NULL, " ");
+			if(!tok) {
+				printf("  Missing required line number.\n");
                                 continue;
                         }
-			p = s + 6;
-                        sscanf(p, "%15s", command);
-                        for(i = 0; *(command + i) != '\0'; i++) {
-                                if(!isdigit(*(command + i))) {
-                                        printf("%s is not a valid number", command);
-                                        continue;
-                                }
+			
+			arg1 = 0;
+                        for(i = 0; tok[i] != '\0'; i++) {
+                                if(!isdigit(tok[i])) {
+                                        printf("  %s is not a valid number\n", tok);
+                                        arg1 = -1;
+                                	break;
+				}
                         }
-                        t1 = atoi(command);
-
-                        while(*p == ' ' || *p == '\t' || *p == '\n') {
-                                p++;
-                        }
-
-                        p += strlen(command);
-
-                        while(*p == ' ' || *p == '\t' || *p == '\n') {
-                                p++;
-                        }
-
-                        if(*p == '\0') {
-                                goto delete_oneparam;
-                        }
-                        sscanf(p, "%15s", command);
-                        for(i = 0; *(command + i) != '\0'; i++) {
-                                if(!isdigit(*(command + i))) {
-                                        printf("%s is not a valid number\n", command);
-                                        continue;
-                                }
-                        }
-                        t2 = atoi(command);
-
-			delete_oneparam:
-			if(t1 < 1 || t1 > doc.len) {
-				printf("Invalid line number\n");
+			if(arg1 == -1) {
 				continue;
 			}
-			while(t2-- > 0 && doc.len >= t1) {
-				free(cll_remove(&doc, t1 - 1));
-			}		
-		} else if(strcmp(command, "PRINT") == 0) {
-			d = doc.len;
-			t3 = 1;
-			if(strlen(s) <= 5) {
-				goto print_noparam;
+                        arg1 = atoi(tok);
+			
+			arg2 = 1;
+			
+			tok = strtok(NULL, " ");
+			if(tok) {
+				for(i = 0; tok[i] != '\0'; i++) {
+                        	        if(!isdigit(tok[i])) {
+                        	                printf("  %s is not a valid number\n", tok);
+                        	                arg2 = -1;
+						break;
+                        	        }
+                        	}
+                        	arg2 = atoi(tok);
+			}
+			if(arg2 == -1) {
+				continue;
 			}
 
-			p = s + 5;
-                        sscanf(p, "%15s", command);
-                        for(i = 0; *(command + i) != '\0'; i++) {
-                                if(!isdigit(*(command + i))) {
-					printf("%s is not a valid number", command);
-                                        continue;
-                                }
-                        }
-                        t3 = atoi(command);
-
-			while(*p == ' ' || *p == '\t' || *p == '\n') {
-                                p++;
-                        }
-
-                        p += strlen(command);
-
-                        while(*p == ' ' || *p == '\t' || *p == '\n') {
-                                p++;
-                        }
-
-			if(*p == '\0') {
-				goto print_noparam;
+			if(arg1 < 1 || arg1 > doc.len) {
+				printf("  Invalid line number\n");
+				continue;
 			}
-			sscanf(p, "%15s", command);
-                        for(i = 0; *(command + i) != '\0'; i++) {
-                                if(!isdigit(*(command + i))) {
-					printf("%s is not a valid number\n", command);
-                                        continue;
-                                }
-                        }
+			while(arg2-- > 0 && doc.len >= arg1) {
+				free(cll_remove(&doc, arg1 - 1));
+			}
+		} else if(strcmp(tok, "PRINT") == 0) {
+			tok = strtok(NULL, " ");
+			if(!tok) {
+				arg1 = 1;
+			} else {
+				for(i = 0; tok[i] != '\0'; i++) {
+					if(!isdigit(tok[i])) {
+						printf("  %s is not a valid number\n", tok);
+						continue;
+					}
+				}	
+				arg1 = atoi(tok);
+				tok = strtok(NULL, " ");
+			}
+			
+			if(!tok) {
+				arg2 = doc.len;
+			} else {
+				for(i = 0; tok[i] != '\0'; i++) {
+					if(!isdigit(tok[i])) {
+						printf("  %s is not a valid number\n", tok);
+						continue;
+					}
+				}
+				arg2 = atoi(tok);
+			}
 
-			d = atoi(command);
-
-			print_noparam:	
-			if(t3 > doc.len || d > doc.len || t3 == 0) {
-				printf("Line number is out of bounds.\n");
+			if(arg1 > doc.len || arg2 > doc.len || arg1 <= 0) {
+				printf("  Line number is out of bounds.\n");
 				continue;
 			}
 			
-			if(t3 > d) {
-				printf("Start line number must be less than or equal to end line number.\n");
+			if(arg1 > arg2) {
+				printf("  Start line number must be less than or equal to end line number.\n");
 				continue;
 			}
 			
 			t1 = doc.len;
         		t2 = 1;
+
         		while((t1 /= 10) > 0) {
                 		t2++;
         		}
 
-			for(i = t3 - 1; i < d; i++) {
+			for(i = arg1 - 1; i < arg2; i++) {
                			printf("%*d |%s\n", t2, i + 1, cll_gets(&doc, i));
         		}
-		} else if(strcmp(command, "SAVEFILE") == 0) {
-			strtok(s, " \t");
-			p = strtok(NULL, " \t");
-			if(!p) {
-				printf("Missing file name.\n");
+		} else if(strcmp(tok, "SAVEFILE") == 0) {
+			tok = strtok(NULL, " ");
+			if(!tok) {
+				printf("  Missing file name.\n");
 				continue;
 			}
 			
-			fp = fopen(p, "wx");
+			if(blen > strlen(b) + strlen(tok) + 1) {
+				tok[strlen(tok)] = ' ';
+			}
+
+			fp = fopen(tok, "wx");
 
 			if(!fp) {
-				printf("File already exists.\n");
+				printf("  File already exists.\n");
 				continue;
 			}
 			for(i = 0; i < doc.len; i++) {
@@ -197,19 +198,22 @@ int main() {
 				fputc('\n', fp);
         		}
 			fclose(fp);
-		} else if(strcmp(command, "OPENFILE") == 0) {
-			strtok(s, " \t");
-			p = strtok(NULL, " \t");
+		} else if(strcmp(tok, "OPENFILE") == 0) {
+			tok = strtok(NULL, " ");
 
-			if(!p) {
-				printf("Missing file name.\n");
+			if(!tok) {
+				printf("  Missing file name.\n");
 				continue;
 			}
 
-			fp = fopen(p, "r");
+			if(blen > strlen(b) + strlen(tok) + 1) {
+				tok[strlen(tok)] = ' ';
+			}
+
+			fp = fopen(tok, "r");
 			
 			if(!fp) {
-				printf("Invalid file name.\n");
+				printf("  Invalid file name.\n");
 				continue;
 			}
 
@@ -240,7 +244,7 @@ int main() {
 			}
 			free(p);
 			fclose(fp);
-		} else if(strcmp(command, "NP_COMPILERUNC") == 0) {
+		} else if(strcmp(tok, "NP_COMPILERUNC") == 0) {
 			t = time(NULL);
 			p = malloc(50);
 			p2 = malloc(50);	
@@ -249,7 +253,7 @@ int main() {
                         fp = fopen(p, "wx");
 
 			if(!fp) {
-				printf("something went wrong\n");
+				printf("  Unable to create temp file.\n");
 				continue;
 			}
                         for(i = 0; i < doc.len; i++) {
@@ -261,31 +265,62 @@ int main() {
 			pid = fork();
 			sprintf(p2, "%s.out", p);
 			if(pid == 0) {
+				printf("  Compiling program...\n");
 				execlp("gcc", "gcc", "-ansi", "-Wall", "-Wextra", "-Wpedantic", "-Werror", p, "-o", p2, NULL);
-				printf("something went wrong\n");
+				printf("  Unable to run compiler\n");
 				_exit(1);
+			} else {
+				wait(&t1);
 			}
-			
-			wait(&t1);
 			if(WIFEXITED(t1) && WEXITSTATUS(t1) == 0) {
-				printf("program compiled.\n");
+				printf("  Compilation successful\n");
 				sprintf(p, "./%s", p2);
 				pid = fork();
 				if(pid == 0) {
-					printf("executing program...\n");
+					printf("  Executing program...\n");
 					execlp(p, p, NULL);
-					printf("something went wrong\n");
+					printf("  Unable to execute program\n");
 					_exit(1);
+				} else {
+					wait(&t1);
+					printf("\n  Program exited with code %d\n", WEXITSTATUS(t1));
 				}
-				wait(&t1);
-				printf("\n\nprogram exited with code %d\n", WEXITSTATUS(t1));
 			} else {
-				printf("something went wrong\n");
+				printf("  Compilation failed with code %d\n", WEXITSTATUS(t1));
 				continue;
 			}
 			
 			free(p);
 			free(p2);
+		} else if(strcmp(tok, "HELP") == 0) {
+			tok = strtok(NULL, " ");
+			if(!tok) {
+				printf("  Available commands (case sensitive):\n");
+				printf("    (1) INSERT\n    (2) DELETE\n    (3) PRINT\n    (4) EOF\n    (5) SAVEFILE\n    (6) OPENFILE\n    (7) NP_COMPILERUNC\n");
+				printf("  For more details, use HELP [command] (e.g., HELP INSERT)\n                     or HELP [number]  (e.g., HELP 1)\n");
+			} else if(strcmp(tok, "1") == 0 || strcmp(tok, "INSERT") == 0) {
+				printf("  The `INSERT` command is used to write text lines to the document\n  If a line number is provided, then it inserts the text at that line\n  If not, then the text is appended to a new line at the end of the document\n  If no text is provided, an empty line is inserted\n   | INSERT [optional line number] [optional text]\n");
+			} else if(strcmp(tok, "2") == 0 || strcmp(tok, "DELETE") == 0) {
+				printf("  The `DELETE` command deletes lines\n  It takes a starting line and an optional amount of lines to delete (1 if not provided) as parameters\n   | DELETE [line number] [optional line count]\n");
+			} else if(strcmp(tok, "3") == 0 || strcmp(tok, "PRINT") == 0) {
+				printf("  The `PRINT` command is used to view the document with line numbers\n  It takes a starting and optional ending line numbers (inclusive) as parameters\n  If the ending line is not provided, it will print the entire document, starting from the line of the first argument\n  If no parameters are provided, it will print the entire document\n   | PRINT [optional starting line] [optional ending line]\n");
+
+			} else if(strcmp(tok, "4") == 0 || strcmp(tok, "EOF") == 0) {
+				printf("  The `EOF` command is used to exit the program\n  No parameters are taken\n  Upon exiting, the contents of the document with numbered lines are printed\n");
+
+			} else if(strcmp(tok, "5") == 0 || strcmp(tok, "SAVEFILE") == 0) {
+				printf("  The `SAVEFILE` command is used to write the document to a file\n  The name of the file is provided as an argument\n   | SAVEFILE [file name]\n");
+
+			} else if(strcmp(tok, "6") == 0 || strcmp(tok, "OPENFILE") == 0) {
+				printf("  The `OPENFILE` command is used to read a text file into the editor\n  The file overwrites any existing text in the document\n   | OPENFILE [file name]\n");
+
+			} else if(strcmp(tok, "7") == 0 || strcmp(tok, "NP_COMPILERUNC") == 0) {
+				printf("  The `NP_COMPILERUNC` command assumes that the document is an ANSI C program\n  This command takes no arguments\n  It saves the document as a temporary C file, compiles it with the gcc options `ansi` `Wall` `Wextra` `Wpedantic` `Werror`\n  and runs the program (given the compilation succeeds)\n  It does not run the program with any command line parameters\n   | NP_COMPILERUNC\n");
+			} else {
+				printf("  Invalid command. Use HELP for a list of available commands.\n");
+			}
+		} else {
+			printf("  Invalid command. Use HELP for a list of available commands.\n");
 		}
 	}
 	t1 = doc.len;
@@ -297,13 +332,6 @@ int main() {
 	for(i = 0; i < doc.len; i++) {
 		printf("%*d |%s\n", t2, i + 1, cll_gets(&doc, i));
 	}
-
 	return 0;
 }
-
-
-
-
-
-
 
