@@ -7,9 +7,8 @@ doc doc_create() {
 	doc o;
 	o.body = cll_create();
 	o.name = malloc(16);
-	o.name_len = 16;
-	o.name[0] = '\0';
-	strcat(o.name, "Untitled");
+	o.name_size = 16;
+	strcpy(o.name, "Untitled");
 	return o;
 }
 
@@ -27,4 +26,12 @@ char *doc_getline(doc *d, int idx) {
 
 void doc_setline(doc *d, int idx, char *data) {
 	cll_setline(&d->body, idx, data);
+}
+
+void doc_rename(doc *d, char *name) {
+	int len = strlen(name);
+	if(len > d->name_size) {
+		d->name = realloc(d->name, len);
+	}
+	strcpy(d->name, name);
 }

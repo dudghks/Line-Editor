@@ -31,6 +31,11 @@ The `EOF` command is used to exit the program. No parameters are taken. Upon exi
 
 ```EOF```
 
+## RENAME
+The `RENAME` command is used to rename the document. 
+
+```RENAME [new title]```
+
 ## SAVEFILE
 The `SAVEFILE` command is used to write the document to a file. The name of the file is provided as an argument.
 

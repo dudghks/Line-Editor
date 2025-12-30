@@ -177,24 +177,30 @@ int main() {
 			for(i = arg1 - 1; i < arg2; i++) {
                			printf("%*d |%s\n", t2, i + 1, doc_getline(&document, i));
         		}
+		} else if(strcmp(tok, "RENAME") == 0) {
+			if(!(tok = strtok(NULL, " "))) {
+				printf("  Name not provided.\n");	
+			} else {
+				if(blen > strlen(b) + strlen(tok) + 1) {
+					tok[strlen(tok)] = ' ';
+				}
+				doc_rename(&document, tok);
+			}
 		} else if(strcmp(tok, "INFO") == 0) { 
 			printf("  Title: %s\n", document.name);
 			printf("  Line count: %d\n", document.body.len);
 		} else if(strcmp(tok, "SAVEFILE") == 0) {
 			tok = strtok(NULL, " ");
 			if(!tok) {
-				printf("  Missing file name.\n");
-				continue;
-			}
-			
-			if(blen > strlen(b) + strlen(tok) + 1) {
+				tok = document.name;
+			} else if(blen > strlen(b) + strlen(tok) + 1) {
 				tok[strlen(tok)] = ' ';
 			}
 
 			fp = fopen(tok, "wx");
 
 			if(!fp) {
-				printf("  File already exists.\n");
+				printf("  File %s already exists.\n", tok);
 				continue;
 			}
 			for(i = 0; i < document.body.len; i++) {
@@ -202,6 +208,7 @@ int main() {
 				fputc('\n', fp);
         		}
 			fclose(fp);
+			printf("  Document saved as %s\n", tok);
 		} else if(strcmp(tok, "OPENFILE") == 0) {
 			tok = strtok(NULL, " ");
 
@@ -217,7 +224,7 @@ int main() {
 			fp = fopen(tok, "r");
 			
 			if(!fp) {
-				printf("  Invalid file name.\n");
+				printf("  Unable to open file.\n");
 				continue;
 			}
 
@@ -299,7 +306,7 @@ int main() {
 			tok = strtok(NULL, " ");
 			if(!tok) {
 				printf("  Available commands (case sensitive):\n");
-				printf("    (1) INSERT\n    (2) DELETE\n    (3) PRINT\n    (4) INFO\n    (5) EOF\n    (6) SAVEFILE\n    (7) OPENFILE\n    (8) NP_COMPILERUNC\n");
+				printf("    (1) INSERT\n    (2) DELETE\n    (3) PRINT\n    (4) INFO\n    (5) RENAME\n    (6) EOF\n    (7) SAVEFILE\n    (8) OPENFILE\n    (9) NP_COMPILERUNC\n");
 				printf("  For more details, use HELP [command] (e.g., HELP INSERT)\n                     or HELP [number]  (e.g., HELP 1)\n");
 			} else if(strcmp(tok, "1") == 0 || strcmp(tok, "INSERT") == 0) {
 				printf("  The `INSERT` command is used to write text lines to the document\n  If a line number is provided, then it inserts the text at that line\n  If not, then the text is appended to a new line at the end of the document\n  If no text is provided, an empty line is inserted\n   | INSERT [optional line number] [optional text]\n");
@@ -309,24 +316,25 @@ int main() {
 				printf("  The `PRINT` command is used to view the document with line numbers\n  It takes a starting and optional ending line numbers (inclusive) as parameters\n  If the ending line is not provided, it will print the entire document, starting from the line of the first argument\n  If no parameters are provided, it will print the entire document\n   | PRINT [optional starting line] [optional ending line]\n");
 
 			} else if(strcmp(tok, "4") == 0 || strcmp(tok, "INFO") == 0) {
-				printf("  The `INFO` command prints information about the document\n  No parameters are taken\n   | INFO");
-			}
-			else if(strcmp(tok, "5") == 0 || strcmp(tok, "EOF") == 0) {
-				printf("  The `EOF` command is used to exit the program\n  No parameters are taken\n  Upon exiting, the contents of the document with numbered lines are printed\n   | EOF");
+				printf("  The `INFO` command prints information about the document\n  No parameters are taken\n   | INFO\n");
+			} else if(strcmp(tok, "5") == 0 || strcmp(tok, "RENAME") == 0) {
+				printf("  The `RENAME` command is used to rename the document\n   | RENAME [new title]\n");
+			} else if(strcmp(tok, "6") == 0 || strcmp(tok, "EOF") == 0) {
+				printf("  The `EOF` command is used to exit the program\n  No parameters are taken\n  Upon exiting, the contents of the document with numbered lines are printed\n   | EOF\n");
 
-			} else if(strcmp(tok, "6") == 0 || strcmp(tok, "SAVEFILE") == 0) {
+			} else if(strcmp(tok, "7") == 0 || strcmp(tok, "SAVEFILE") == 0) {
 				printf("  The `SAVEFILE` command is used to write the document to a file\n  The name of the file is provided as an argument\n   | SAVEFILE [file name]\n");
 
-			} else if(strcmp(tok, "7") == 0 || strcmp(tok, "OPENFILE") == 0) {
+			} else if(strcmp(tok, "8") == 0 || strcmp(tok, "OPENFILE") == 0) {
 				printf("  The `OPENFILE` command is used to read a text file into the editor\n  The file overwrites any existing text in the document\n   | OPENFILE [file name]\n");
 
-			} else if(strcmp(tok, "8") == 0 || strcmp(tok, "NP_COMPILERUNC") == 0) {
+			} else if(strcmp(tok, "9") == 0 || strcmp(tok, "NP_COMPILERUNC") == 0) {
 				printf("  The `NP_COMPILERUNC` command assumes that the document is an ANSI C program\n  This command takes no arguments\n  It saves the document as a temporary C file, compiles it with the gcc options `ansi` `Wall` `Wextra` `Wpedantic` `Werror`\n  and runs the program (given the compilation succeeds)\n  It does not run the program with any command line parameters\n   | NP_COMPILERUNC\n");
 			} else {
-				printf("  Invalid command. Use HELP for a list of available commands.\n");
+				printf("  Unrecognized command. Use HELP for a list of available commands.\n");
 			}
 		} else {
-			printf("  Invalid command. Use HELP for a list of available commands.\n");
+			printf("  Unrecognized command. Use HELP for a list of available commands.\n");
 		}
 	}
 	t1 = document.body.len;
