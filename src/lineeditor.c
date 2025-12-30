@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include "cll.h"
+#include "doc.h"
 
 int readline(char **b, size_t *size) {
 	size_t i = 0; 
@@ -22,7 +23,7 @@ int readline(char **b, size_t *size) {
 }
 
 int main() {
-	cll doc = cll_create();
+	doc document = doc_create();
 	char *b = malloc(16), *p, *p2;
 	int i, k = 1, arg1, arg2, t1, t2, t3;
 	size_t bsize = 16, blen;
@@ -43,7 +44,7 @@ int main() {
 			tok = strtok(NULL, " ");
 
 			if(!tok) {
-				cll_insert(&doc, -1, "");
+				doc_insertline(&document, -1, "");
 				continue;
 			}
 			arg1 = 0;
@@ -53,7 +54,7 @@ int main() {
 						tok[strlen(tok)] = ' ';
 					}
 
-					cll_insert(&doc, -1, tok);
+					doc_insertline(&document, -1, tok);
 					arg1 = -1;
 					break;
 				}
@@ -68,21 +69,21 @@ int main() {
 				continue;
 			}
 
-			while(doc.len < arg1 - 1) {
-				cll_insert(&doc, -1, "");
+			while(document.body.len < arg1 - 1) {
+				doc_insertline(&document, -1, "");
 			}
 			
 			arg2 = strlen(tok);	
 			tok = strtok(NULL, " ");
 			if(!tok) {
-				cll_insert(&doc, arg1 - 1, "");
+				doc_insertline(&document, arg1 - 1, "");
 				continue;
 			}
 
 			if(blen > strlen(b) + arg2 + strlen(tok) + 2) {
 				tok[strlen(tok)] = ' ';
 			}
-			cll_insert(&doc, arg1 - 1, tok);
+			doc_insertline(&document, arg1 - 1, tok);
 		} else if(strcmp(tok, "EOF") == 0) {
 			break;
 		} else if(strcmp(tok, "DELETE") == 0) {
@@ -122,12 +123,12 @@ int main() {
 				continue;
 			}
 
-			if(arg1 < 1 || arg1 > doc.len) {
+			if(arg1 < 1 || arg1 > document.body.len) {
 				printf("  Invalid line number\n");
 				continue;
 			}
-			while(arg2-- > 0 && doc.len >= arg1) {
-				free(cll_remove(&doc, arg1 - 1));
+			while(arg2-- > 0 && document.body.len >= arg1) {
+				free(doc_deleteline(&document, arg1 - 1));
 			}
 		} else if(strcmp(tok, "PRINT") == 0) {
 			tok = strtok(NULL, " ");
@@ -145,7 +146,7 @@ int main() {
 			}
 			
 			if(!tok) {
-				arg2 = doc.len;
+				arg2 = document.body.len;
 			} else {
 				for(i = 0; tok[i] != '\0'; i++) {
 					if(!isdigit(tok[i])) {
@@ -156,7 +157,7 @@ int main() {
 				arg2 = atoi(tok);
 			}
 
-			if(arg1 > doc.len || arg2 > doc.len || arg1 <= 0) {
+			if(arg1 > document.body.len || arg2 > document.body.len || arg1 <= 0) {
 				printf("  Line number is out of bounds.\n");
 				continue;
 			}
@@ -166,7 +167,7 @@ int main() {
 				continue;
 			}
 			
-			t1 = doc.len;
+			t1 = document.body.len;
         		t2 = 1;
 
         		while((t1 /= 10) > 0) {
@@ -174,10 +175,11 @@ int main() {
         		}
 
 			for(i = arg1 - 1; i < arg2; i++) {
-               			printf("%*d |%s\n", t2, i + 1, cll_gets(&doc, i));
+               			printf("%*d |%s\n", t2, i + 1, doc_getline(&document, i));
         		}
 		} else if(strcmp(tok, "INFO") == 0) { 
-			printf("  Line count: %d\n", doc.len);
+			printf("  Title: %s\n", document.name);
+			printf("  Line count: %d\n", document.body.len);
 		} else if(strcmp(tok, "SAVEFILE") == 0) {
 			tok = strtok(NULL, " ");
 			if(!tok) {
@@ -195,8 +197,8 @@ int main() {
 				printf("  File already exists.\n");
 				continue;
 			}
-			for(i = 0; i < doc.len; i++) {
-                		fputs(cll_gets(&doc, i), fp);
+			for(i = 0; i < document.body.len; i++) {
+                		fputs(doc_getline(&document, i), fp);
 				fputc('\n', fp);
         		}
 			fclose(fp);
@@ -223,15 +225,14 @@ int main() {
 			t1 = 16;
 			t3 = 0;
 
-
-			while(doc.len > 0) {
-				free(cll_remove(&doc, 0));
+			while(document.body.len > 0) {
+				free(doc_deleteline(&document, 0));
 			}
 
 			while((t2 = fgetc(fp)) != EOF) {
 				if(t2 == '\n') {
 					p[t3] = '\0';
-					cll_insert(&doc, -1, p);
+					doc_insertline(&document, -1, p);
 					t3 = 0;
 					continue;
 				} 
@@ -242,7 +243,7 @@ int main() {
 			}
 			if(t3 != 0) {
 				p[t3] = '\0';
-				cll_insert(&doc, -1, p);
+				doc_insertline(&document, -1, p);
 			}
 			free(p);
 			fclose(fp);
@@ -258,8 +259,8 @@ int main() {
 				printf("  Unable to create temp file.\n");
 				continue;
 			}
-                        for(i = 0; i < doc.len; i++) {
-                                fputs(cll_gets(&doc, i), fp);
+                        for(i = 0; i < document.body.len; i++) {
+                                fputs(doc_getline(&document, i), fp);
                                 fputc('\n', fp);
                         }
                         fclose(fp);
@@ -298,7 +299,7 @@ int main() {
 			tok = strtok(NULL, " ");
 			if(!tok) {
 				printf("  Available commands (case sensitive):\n");
-				printf("    (1) INSERT\n    (2) DELETE\n    (3) PRINT\n    \n    (4) INFO\n    (5) EOF\n    (6) SAVEFILE\n    (7) OPENFILE\n    (8) NP_COMPILERUNC\n");
+				printf("    (1) INSERT\n    (2) DELETE\n    (3) PRINT\n    (4) INFO\n    (5) EOF\n    (6) SAVEFILE\n    (7) OPENFILE\n    (8) NP_COMPILERUNC\n");
 				printf("  For more details, use HELP [command] (e.g., HELP INSERT)\n                     or HELP [number]  (e.g., HELP 1)\n");
 			} else if(strcmp(tok, "1") == 0 || strcmp(tok, "INSERT") == 0) {
 				printf("  The `INSERT` command is used to write text lines to the document\n  If a line number is provided, then it inserts the text at that line\n  If not, then the text is appended to a new line at the end of the document\n  If no text is provided, an empty line is inserted\n   | INSERT [optional line number] [optional text]\n");
@@ -328,14 +329,14 @@ int main() {
 			printf("  Invalid command. Use HELP for a list of available commands.\n");
 		}
 	}
-	t1 = doc.len;
+	t1 = document.body.len;
 	t2 = 1;
 	while((t1 /= 10) > 0) {
 		t2++;
 	}
 	printf("\n----------Document Contents----------\n");
-	for(i = 0; i < doc.len; i++) {
-		printf("%*d |%s\n", t2, i + 1, cll_gets(&doc, i));
+	for(i = 0; i < document.body.len; i++) {
+		printf("%*d |%s\n", t2, i + 1, doc_getline(&document, i));
 	}
 	return 0;
 }
