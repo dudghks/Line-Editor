@@ -21,6 +21,11 @@ The `PRINT` command is used to view the document with line numbers. It takes a s
 
 ```PRINT [optional starting line] [optional ending line]```
 
+## INFO
+The `INFO` command prints information about the document. No parameters are taken.
+
+```INFO```
+
 ## EOF
 The `EOF` command is used to exit the program. No parameters are taken. Upon exiting, the contents of the document with numbered lines are printed.
 
