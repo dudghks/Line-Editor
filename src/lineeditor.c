@@ -7,20 +7,7 @@
 #include <time.h>
 #include "cll.h"
 #include "doc.h"
-
-int readline(char **b, size_t *size) {
-	size_t i = 0; 
-	int c = getchar();
-	while(c != '\n' && c != EOF) {
-		if(i + 1 >= *size) {
-			 *b = realloc(*b, *size *= 2);
-		}
-		(*b)[i++] = c;
-		c = getchar();
-	}
-	(*b)[i] = '\0';
-	return c != EOF || i != 0;
-}
+#include "utils.h"
 
 int main() {
 	doc document = doc_create();
@@ -224,7 +211,7 @@ int main() {
 			fp = fopen(tok, "r");
 			
 			if(!fp) {
-				printf("  Unable to open file.\n");
+				printf("  Unable to open file %s (either does not exist or missing permissions)\n", tok);
 				continue;
 			}
 
