@@ -9,7 +9,7 @@
 #include "doc.h"
 #include "utils.h"
 
-int main() {
+int main(int argc, char **argv) {
 	doc document = doc_create();
 	char *b = malloc(16), *p, *p2;
 	int i, k = 1, arg1, arg2, t1, t2, t3;
@@ -18,7 +18,38 @@ int main() {
 	FILE *fp;
 	time_t t;
 	pid_t pid;
-	
+	if(argc > 1) {
+		fp = fopen(*++argv, "r");
+			
+		if(!fp) {
+			printf("  Unable to open file %s (either does not exist or missing permissions)\n", *argv);
+		} else {
+			p = malloc(16);
+			t1 = 16;
+			t3 = 0;
+			while((t2 = fgetc(fp)) != EOF) {
+				if(t2 == '\n') {
+					p[t3] = '\0';
+					doc_insertline(&document, -1, p);
+					t3 = 0;
+					continue;
+				} 
+				if(t3 + 1 >= t1) {
+					p = realloc(p, t1 *= 2);
+				}
+				p[t3++] = t2;
+			}
+			if(t3 != 0) {
+				p[t3] = '\0';
+				doc_insertline(&document, -1, p);
+			}
+			free(p);
+			fclose(fp);
+			doc_rename(&document, *argv);
+			printf("Successfully opened file %s\n", *argv);
+		}
+	}
+
 	while(k) {
 		printf("> ");
 		k = readline(&b, &bsize);
@@ -241,6 +272,7 @@ int main() {
 			}
 			free(p);
 			fclose(fp);
+			doc_rename(&document, tok);
 		} else if(strcmp(tok, "NP_COMPILERUNC") == 0) {
 			t = time(NULL);
 			p = malloc(50);
