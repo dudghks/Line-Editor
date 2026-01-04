@@ -2,7 +2,7 @@
 This is a line editor that runs in the terminal of any POSIX-compatible system.
 
 # Commands
-The document can be interacted using the following commands. Commands are case-sensitive and use the following syntax:
+The document can be interacted using the following commands. Commands are not case-sensitive and use the following syntax:
 
 ```COMMAND [args] ```
 
