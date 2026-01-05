@@ -20,8 +20,8 @@ void cll_insert(cll *list, int idx, char *data);
 
 char *cll_remove(cll *list, int idx);
 
-char *cll_gets(cll *list, int idx);
+char *cll_getline(cll *list, int idx);
 
-void cll_sets(cll *list, int idx, char *data);
+void cll_setline(cll *list, int idx, char *data);
 
 #endif /* CLL_H_ */

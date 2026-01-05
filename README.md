@@ -2,7 +2,7 @@
 This is a line editor that runs in the terminal of any POSIX-compatible system.
 
 # Commands
-The document can be interacted using the following commands. Commands are case-sensitive and use the following syntax:
+The document can be interacted using the following commands. Commands are not case-sensitive and use the following syntax:
 
 ```COMMAND [args] ```
 
@@ -21,10 +21,20 @@ The `PRINT` command is used to view the document with line numbers. It takes a s
 
 ```PRINT [optional starting line] [optional ending line]```
 
+## INFO
+The `INFO` command prints information about the document. No parameters are taken.
+
+```INFO```
+
 ## EOF
 The `EOF` command is used to exit the program. No parameters are taken. Upon exiting, the contents of the document with numbered lines are printed.
 
 ```EOF```
+
+## RENAME
+The `RENAME` command is used to rename the document. 
+
+```RENAME [new title]```
 
 ## SAVEFILE
 The `SAVEFILE` command is used to write the document to a file. The name of the file is provided as an argument.

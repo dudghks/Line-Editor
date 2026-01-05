@@ -85,7 +85,7 @@ char *cll_remove(cll *list, int idx) {
 	return o;
 }
 
-char *cll_gets(cll *list, int idx) {
+char *cll_getline(cll *list, int idx) {
 	struct cll_n *node = list->h;
 	for( ; idx > 0; idx--) {
 		node = node->next;
@@ -93,7 +93,7 @@ char *cll_gets(cll *list, int idx) {
 	return node->s;
 }
 
-void cll_sets(cll *list, int idx, char *data) {
+void cll_setline(cll *list, int idx, char *data) {
 	struct cll_n *node = list->h;
 	int l;
 	for( ; idx > 0; idx--) {
