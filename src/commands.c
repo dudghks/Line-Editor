@@ -1,6 +1,6 @@
 #include "commands.h"
 #include "doc.h"
-
+#include "utils.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -82,6 +82,123 @@ int cmd_delete(doc *document, char *l) {
 	while(arg2-- > 0 && document->body.len >= arg1) {
 		free(doc_deleteline(document, arg1 - 1));
 	}
+	return 1;
+}
+
+int cmd_insertinline(doc *document, char *l) {
+	int arg1, arg2, rc;
+
+	if(!l) {
+		printf("  Missing line number, line index, and text arguments.\n");
+		return -1;
+	}
+
+	if((rc = get_int_arg(&l, &arg1)) == -1) {
+		printf("  First argument must be a number.\n");
+		return -1;
+	} else if(rc == 0) {
+		printf("  Missing line index and text arguments\n");
+		return -1;
+	}
+
+	if((rc = get_int_arg(&l, &arg2)) == -1) {
+		printf("  Second argument must be a number.\n");
+		return -1;
+	} else if(rc == 0) {
+		printf("  Missing text to be inserted.\n");
+		return -1;
+	}
+
+	if(arg1 < 1 || arg1 > document->body.len) {
+		printf("  Line number is out of bounds.\n");
+		return -1;
+	}
+	if(arg2 < 1) {
+		printf("  Starting index must be positive.\n");
+		return -1;
+	}
+
+	doc_insertinline(document, arg1 - 1, arg2 - 1, l);
+	return 1;
+}
+
+int cmd_replaceinline(doc *document, char *l) {
+	int arg1, arg2, rc;
+
+	if(!l) {
+		printf("  Missing line number, line index, and text arguments.\n");
+		return -1;
+	}
+
+	if((rc = get_int_arg(&l, &arg1)) == -1) {
+		printf("  First argument must be a number.\n");
+		return -1;
+	} else if(rc == 0) {
+		printf("  Missing line index and text arguments.\n");
+		return -1;
+	}
+
+	if((rc = get_int_arg(&l, &arg2)) == -1) {
+		printf("  Second argument must be a number.\n");
+		return -1;
+	} else if(rc == 0) {
+		printf("  Missing text to be inserted.\n");
+		return -1;
+	}
+
+	if(arg1 < 1 || arg1 > document->body.len) {
+		printf("  Line number is out of bounds.\n");
+		return -1;
+	}
+	if(arg2 < 1) {
+		printf("  Starting index must be positive.\n");
+		return -1;
+	}
+	
+	doc_replaceinline(document, arg1 - 1, arg2 - 1, l);
+	
+	return 1;
+}
+
+int cmd_deletefromline(doc *document, char *l) {
+	int arg1, arg2, arg3, rc;
+
+	if(!l) {
+		printf("  Missing line number, line index, and number of chars to delete\n");
+		return -1;
+	}
+
+	if((rc = get_int_arg(&l, &arg1)) == -1) {
+		printf("  First argument must be a number.\n");
+		return -1;
+	} else if(rc == 0) {
+		printf("  Missing line index and number of chars to delete.\n");
+		return -1;
+	}
+
+	if((rc = get_int_arg(&l, &arg2)) == -1) {
+		printf("  Second argument must be a number.\n");
+		return -1;
+	} else if(rc == 0) {
+		printf("  Missing number of chars to delete.\n");
+		return -1;
+	}
+
+	if((rc = get_int_arg(&l, &arg3)) == -1) {
+		printf("  Third argument must be a number.\n");
+		return -1;
+	}
+
+	if(arg1 < 1 || arg1 > document->body.len) {
+		printf("  Line number is out of bounds.\n");
+		return -1;
+	}
+	if(arg2 < 1) {
+		printf("  Starting index must be positive.\n");
+		return -1;
+	}
+
+	doc_deletefromline(document, arg1 - 1, arg2 - 1, arg3);
 	return 1;
 }
 
@@ -276,25 +393,31 @@ int cmd_help(doc *document, char *l) {
 	document++;
 	if(!l) {
 		printf("  Available commands (case insensitive):\n");
-                printf("    (1) INSERT\n    (2) DELETE\n    (3) PRINT\n    (4) INFO\n    (5) RENAME\n    (6) EOF\n    (7) SAVEFILE\n    (8) OPENFILE\n    (9) NP_COMPILERUNC\n");
+                printf("    (1) INSERT\n    (2) DELETE\n    (3) INSERTINLINE\n    (4) REPLACEINLINE\n    (5) DELETEINLINE\n    (6) PRINT\n    (7) INFO\n    (8) RENAME\n    (9) EOF\n    (10) SAVEFILE\n    (11) OPENFILE\n    (12) NP_COMPILERUNC\n");
                 printf("  For more details, use HELP [command] (e.g., HELP INSERT)\n                     or HELP [number]  (e.g., HELP 1)\n");
-	} else if(strcmp(l, "1") == 0 || strcmp(l, "INSERT") == 0) {
+	} else if(strcmp(l, "1") == 0 || strcmp_ci(l, "insert")) {
 		printf("  The `INSERT` command is used to write text lines to the document\n  If a line number is provided, then it inserts the text at that line\n  If not, then the text is appended to a new line at the end of the document\n  If no text is provided, an empty line is inserted\n   | INSERT [optional line number] [optional text]\n");
-	} else if(strcmp(l, "2") == 0 || strcmp(l, "DELETE") == 0) {
+	} else if(strcmp(l, "2") == 0 || strcmp_ci(l, "delete")) {
 		printf("  The `DELETE` command deletes lines\n  It takes a starting line and an optional amount of lines to delete (1 if not provided) as parameters\n   | DELETE [line number] [optional line count]\n");
-	} else if(strcmp(l, "3") == 0 || strcmp(l, "PRINT") == 0) {
-	printf("  The `PRINT` command is used to view the document with line numbers\n  It takes a starting and optional ending line numbers (inclusive) as parameters\n  If the ending line is not provided, it will print the entire document, starting from the line of the first argument\n  If no parameters are provided, it will print the entire document\n   | PRINT [optional starting line] [optional ending line]\n");
-	} else if(strcmp(l, "4") == 0 || strcmp(l, "INFO") == 0) {
+	} else if(strcmp(l, "3") == 0 || strcmp_ci(l, "print")) {
+		printf("  The `PRINT` command is used to view the document with line numbers\n  It takes a starting and optional ending line numbers (inclusive) as parameters\n  If the ending line is not provided, it will print the entire document, starting from the line of the first argument\n  If no parameters are provided, it will print the entire document\n   | PRINT [optional starting line] [optional ending line]\n");
+	} else if(strcmp(l, "4") == 0 || strcmp_ci(l, "insertinline")) {
+		printf("  The `INSERTINLINE` command is used to insert text to an existing line\n  It takes two integer parameters: the line number and the starting index (1-indexed)\n  Any existing text in the line is shifted to make space for the new text\n   | INSERTINLINE [line number] [starting index] [text]\n");
+	} else if(strcmp(l, "5") == 0 || strcmp_ci(l, "replaceinline")) {
+		printf("  THE `REPLACEINLINE` command is used to write text to an existing line\n  It takes two integer parameters: the line number and the starting index (1-indexed)\n  The new text is written over the existing text\n   | REPLACEINLINE [line number] [starting index] [text]\n");
+	} else if(strcmp(l, "6") == 0 || strcmp_ci(l, "deletefromline")) {
+		printf("  The `DELETEFROMLINE` command is used to delete text from an existing line\n  It takes three integer parameters: the line number, the starting index (1-indexed), and the number of characters\n   |  DELETEFROMLINE [line number] [starting index] [number of chars]\n");
+	} else if(strcmp(l, "7") == 0 || strcmp_ci(l, "info")) {
 		printf("  The `INFO` command prints information about the document\n  No parameters are taken\n   | INFO\n");
-	} else if(strcmp(l, "5") == 0 || strcmp(l, "RENAME") == 0) {
+	} else if(strcmp(l, "8") == 0 || strcmp_ci(l, "rename")) {
 		printf("  The `RENAME` command is used to rename the document\n   | RENAME [new title]\n");
-        } else if(strcmp(l, "6") == 0 || strcmp(l, "EOF") == 0) {
+        } else if(strcmp(l, "9") == 0 || strcmp_ci(l, "eof")) {
 		printf("  The `EOF` command is used to exit the program\n  No parameters are taken\n  Upon exiting, the contents of the document with numbered lines are printed\n   | EOF\n");
-	} else if(strcmp(l, "7") == 0 || strcmp(l, "SAVEFILE") == 0) {
+	} else if(strcmp(l, "10") == 0 || strcmp_ci(l, "savefile")) {
 		printf("  The `SAVEFILE` command is used to write the document to a file\n  The name of the file is provided as an argument\n   | SAVEFILE [file name]\n");
-	} else if(strcmp(l, "8") == 0 || strcmp(l, "OPENFILE") == 0) {
+	} else if(strcmp(l, "11") == 0 || strcmp_ci(l, "openfile")) {
 		printf("  The `OPENFILE` command is used to read a text file into the editor\n  The file overwrites any existing text in the document\n   | OPENFILE [file name]\n");
-        } else if(strcmp(l, "9") == 0 || strcmp(l, "NP_COMPILERUNC") == 0) {
+        } else if(strcmp(l, "12") == 0 || strcmp_ci(l, "np_compilerunc")) {
 		printf("  The `NP_COMPILERUNC` command assumes that the document is an ANSI C program\n  This command takes no arguments\n  It saves the document as a temporary C file, compiles it with the gcc options `ansi` `Wall` `Wextra` `Wpedantic` `Werror`\n  and runs the program (given the compilation succeeds)\n  It does not run the program with any command line parameters\n   | NP_COMPILERUNC\n");
 	} else {
 		printf("  Unrecognized command. Use HELP for a list of available commands.\n");

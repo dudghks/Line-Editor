@@ -85,15 +85,15 @@ char *cll_remove(cll *list, int idx) {
 	return o;
 }
 
-char *cll_getline(cll *list, int idx) {
+struct cll_n *cll_getnode(cll *list, int idx) {
 	struct cll_n *node = list->h;
 	for( ; idx > 0; idx--) {
 		node = node->next;
 	}
-	return node->s;
+	return node;
 }
 
-void cll_setline(cll *list, int idx, char *data) {
+void cll_setnode(cll *list, int idx, char *data) {
 	struct cll_n *node = list->h;
 	int l;
 	for( ; idx > 0; idx--) {

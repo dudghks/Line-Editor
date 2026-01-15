@@ -7,6 +7,9 @@ typedef enum {
        	CMD_UNKNOWN = 0,	
 	CMD_INSERT,
 	CMD_DELETE,
+	CMD_INSERTINLINE,
+	CMD_REPLACEINLINE,
+	CMD_DELETEFROMLINE,
 	CMD_PRINT,
 	CMD_RENAME,
 	CMD_INFO,
@@ -19,6 +22,8 @@ typedef enum {
 } cmd;
 
 int readline(char **b, size_t *size);
+
+int strcmp_ci(char *a, char *b);
 
 cmd identify_command(char *s);
 

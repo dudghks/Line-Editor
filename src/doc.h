@@ -21,4 +21,10 @@ void doc_setline(doc *d, int idx, char *data);
 
 void doc_rename(doc *d, char *name);
 
+void doc_insertinline(doc *d, int idx, int l_idx, char *data);
+
+void doc_replaceinline(doc *d, int idx, int l_idx, char *data);
+
+void doc_deletefromline(doc *d, int idx, int l_idx, int amt);
+
 #endif /* DOC_H_ */

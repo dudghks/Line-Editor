@@ -21,6 +21,9 @@ int main(int argc, char **argv) {
 		cmd_unknown,
 		cmd_insert,
 		cmd_delete,
+		cmd_insertinline,
+		cmd_replaceinline,
+		cmd_deletefromline,
 		cmd_print,
 		cmd_rename,
 		cmd_info,
@@ -58,6 +61,10 @@ int main(int argc, char **argv) {
 		}
 	        
 		commands[command](&document, p);
+
+		if(command == CMD_EOF) {
+			break;
+		}
 	}
 	t1 = document.body.len;
 	t2 = 1;
