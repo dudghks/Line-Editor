@@ -30,6 +30,9 @@ cmd identify_command(char *s) {
 	switch (*s) {
 		case 'D':
 		case 'd':
+			if(strcmp_ci(s, "deletefromline")) {
+				return CMD_DELETEFROMLINE;
+			}
 			return strcmp_ci(s, "delete") ? CMD_DELETE : CMD_UNKNOWN;
 		case 'e':
 		case 'E':
@@ -41,6 +44,8 @@ cmd identify_command(char *s) {
 		case 'i':
 			if(strcmp_ci(s, "insert")) {
 				return CMD_INSERT;
+			} else if(strcmp_ci(s, "insertinline")) {
+				return CMD_INSERTINLINE;
 			}
 			return strcmp_ci(s, "info") ? CMD_INFO : CMD_UNKNOWN;
 		case 'n':
@@ -54,6 +59,9 @@ cmd identify_command(char *s) {
 			return strcmp_ci(s, "print") ? CMD_PRINT : CMD_UNKNOWN;
 		case 'r':
 		case 'R':
+			if(strcmp_ci(s, "replaceinline")) {
+				return CMD_REPLACEINLINE;
+			}
 			return strcmp_ci(s, "rename") ? CMD_RENAME : CMD_UNKNOWN;
 		case 's':
 		case 'S':

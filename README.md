@@ -16,6 +16,24 @@ The `DELETE` command deletes lines. It takes a starting line and an optional amo
 
 ```DELETE [line number] [optional line count]```
 
+## INSERTINLINE
+
+The `INSERTINLINE` command is used to insert text to an existing line. It takes two integer parameters: the line number and the starting index (1-indexed). Any existing text in the line is shifted to make space for the new text.
+
+```INSERTINLINE [line number] [starting index] [text]```
+
+## REPLACEINLINE
+
+The `REPLACEINLINE` command is used to write text to an existing line. It takes two integer parameters: the line number and the starting index (1-indexed). The new text is written over the existing text.
+
+```REPLACEINLINE [line number] [starting index] [text]```
+
+## DELETEFROMLINE
+
+The `DELETEFROMLINE` command is used to delete text from an existing line. It takes three integer parameters: the line number, the starting index (1-indexed), and the number of characters.
+
+```DELETEFROMLINE [line number] [starting index] [number of chars]```
+
 ## PRINT
 The `PRINT` command is used to view the document with line numbers. It takes a starting and optional ending line numbers (inclusive) as parameters. If the ending line is not provided, it will print the entire document, starting from the line of the first argument. If no parameters are provided, it will print the entire document.
 
